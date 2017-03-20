@@ -4,6 +4,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,11 +17,14 @@ import java.net.URL;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
+    private ListView listApplications;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        listApplications = (ListView) findViewById(R.id.xmlListView);
 
 
         /* while (true){                  // Loop prevents onCreate method from finishing; will make app freeze
@@ -50,6 +55,11 @@ public class MainActivity extends AppCompatActivity {
 
             ParseApplication parseApplication = new ParseApplication(); //Creating new ParseApplication object
             parseApplication.parse(s);  //Recall "s" is the XML data that Android framework has sent after downloading in the doInBackground method
+
+            ArrayAdapter<FeedEntry> arrayAdapter = new ArrayAdapter<FeedEntry>(MainActivity.this, R.layout.list_item, parseApplication.getApplications());  //Create array adapter object, parameters (context (instance of main activity), resource containing the textView that the array adapter will use to put the data into, list of objects to display)
+            listApplications.setAdapter(arrayAdapter);  //Tell adapter to get data
+
+
         }
 
         @Override

@@ -112,4 +112,6 @@ public class ParseApplication {
 }
 
 
-
+//For ListView to function, an adaptor must be placed between the ListView and data
+//Whenever ListView needs to display more data, it asks the adaptor for a view that it can display
+//The adaptor is responsible for placing the values of the data into the correct widgets in the view, then returns the view to the ListView for display
