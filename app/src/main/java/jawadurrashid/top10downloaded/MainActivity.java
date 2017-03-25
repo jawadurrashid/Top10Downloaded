@@ -4,7 +4,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.ArrayAdapter;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ListView;
 
 import java.io.BufferedReader;
@@ -18,6 +19,14 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private ListView listApplications;
+    private String feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=%d/xml";
+    private int feedLimit = 10;
+    private String feedCachedUrl = "INVALID";  //Invalid URL in case we want to force a download to happen
+    public static final String STATE_URL = "feedUrl";
+    public static final String STATE_LIMIT = "feedLimit";
+
+
+    //String format method takes string containing special format codes and number of values to replace the  format code
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +35,12 @@ public class MainActivity extends AppCompatActivity {
 
         listApplications = (ListView) findViewById(R.id.xmlListView);
 
+        if (savedInstanceState != null) {      //Bundle passed to onCreate will be non-null if the activity is restarted (changing orientation)
+            feedUrl = savedInstanceState.getString(STATE_URL);
+            feedLimit = savedInstanceState.getInt(STATE_LIMIT);
+
+        }
+
 
         /* while (true){                  // Loop prevents onCreate method from finishing; will make app freeze
             int x = 5;
@@ -33,11 +48,82 @@ public class MainActivity extends AppCompatActivity {
 
         // Downloading data over internet can unreliable, therefore it is good to run download on a separate thread
 
-        Log.d(TAG, "onCreate: starting Asynctask");     //To start background task, we must create instance of DownloadData class and call excecute method
-        DownloadData downloadData = new DownloadData();
-        downloadData.execute("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml");
-        Log.d(TAG, "onCreate: done");
+        downloadUrl(String.format(feedUrl, feedLimit));   //Parsing web link and feed limit (set to 10) and will replace %d
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.feeds_menu, menu);    //Activity is a context
+        if (feedLimit == 10) {
+            menu.findItem(R.id.mnu10).setChecked(true);
+        } else {
+            menu.findItem(R.id.mnu25).setChecked(true);
+        }
+        return true;                                           // Tells Android that menu has been inflated
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.mnuFree:
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=%d/xml";
+                break;
+
+            case R.id.mnuPaid:
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/toppaidapplications/limit=%d/xml";
+                break;
+
+            case R.id.mnuSongs:
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topsongs/limit=%d/xml";
+                break;
+
+            case R.id.mnu10:
+
+            case R.id.mnu25:
+                if (!item.isChecked()) {
+                    item.setChecked(true);
+                    feedLimit = 35 - feedLimit;
+                    Log.d(TAG, "onOptionsItemSelected: " + item.getTitle() + " setting Feed limit to " + feedLimit);
+
+                } else {
+                    Log.d(TAG, "onOptionsItemSelected: " + item.getTitle() + " feedLimit unchanged");
+                }
+                break;
+
+            case R.id.mnuRefresh:
+                feedCachedUrl = "INVALIDATED";
+                break;
+
+            default:
+                return super.onOptionsItemSelected(item);
+
+        }
+
+        downloadUrl(String.format(feedUrl, feedLimit));
+        return true;
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString(STATE_URL, feedUrl);
+        outState.putInt(STATE_LIMIT, feedLimit);
+        super.onSaveInstanceState(outState);
+    }
+
+    private void downloadUrl(String feedUrl) {
+
+        if (!feedUrl.equalsIgnoreCase(feedCachedUrl)) {     //Will check value against stored value; if they are the same then the data will not be downloaded
+            Log.d(TAG, "downloadUrl: starting Asynctask");
+            DownloadData downloadData = new DownloadData();
+            downloadData.execute(feedUrl);
+            feedCachedUrl = feedUrl;
+            Log.d(TAG, "downloadUrl: done");
+        } else {
+            Log.d(TAG, "downloadUrl: URL not changed");
+        }
     }
 
     private class DownloadData extends AsyncTask<String, Void, String> {        //Subclassing AsyncTask; built in Android task that takes care of multi-threading complexities
@@ -51,14 +137,16 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {          //Runs on main UI thread once the background process is completed and returns value
             super.onPostExecute(s);
-            Log.d(TAG, "onPostExecute: paramater is " + s);  //Print out parameter passed in
+//            Log.d(TAG, "onPostExecute: paramater is " + s);  //Print out parameter passed in
 
             ParseApplication parseApplication = new ParseApplication(); //Creating new ParseApplication object
             parseApplication.parse(s);  //Recall "s" is the XML data that Android framework has sent after downloading in the doInBackground method
 
-            ArrayAdapter<FeedEntry> arrayAdapter = new ArrayAdapter<FeedEntry>(MainActivity.this, R.layout.list_item, parseApplication.getApplications());  //Create array adapter object, parameters (context (instance of main activity), resource containing the textView that the array adapter will use to put the data into, list of objects to display)
-            listApplications.setAdapter(arrayAdapter);  //Tell adapter to get data
+//            ArrayAdapter<FeedEntry> arrayAdapter = new ArrayAdapter<FeedEntry>(MainActivity.this, R.layout.list_item, parseApplication.getApplications());  //Create array adapter object, parameters (context (instance of main activity), resource containing the textView that the array adapter will use to put the data into, list of objects to display)
+//            listApplications.setAdapter(arrayAdapter);  //Tell adapter to get data
 
+            FeedAdapter feedAdaptor = new FeedAdapter(MainActivity.this, R.layout.list_record, parseApplication.getApplications());
+            listApplications.setAdapter(feedAdaptor);
 
         }
 

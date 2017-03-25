@@ -1,7 +1,5 @@
 package jawadurrashid.top10downloaded;
 
-import android.util.Log;
-
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
@@ -53,7 +51,7 @@ public class ParseApplication {
 
                 switch (eventType) {                     //Getting name of current tag
                     case XmlPullParser.START_TAG:
-                        Log.d(TAG, "parse: Starting tag for  " + tagName);
+//                        Log.d(TAG, "parse: Starting tag for  " + tagName);
                         if ("entry".equalsIgnoreCase(tagName)) {      //Only interested in an entry tag; only concerned with data in individual entries
                             inEntry = true;                          //If we have entry tag we create an instance of the feed entry class for data storage
                             currentRecord = new FeedEntry();
@@ -66,7 +64,7 @@ public class ParseApplication {
                         break;
 
                     case XmlPullParser.END_TAG:
-                        Log.d(TAG, "parse: Ending tag for " + tagName); //Will read current tag and extract the appropriate data from XML according to tag
+//                        Log.d(TAG, "parse: Ending tag for " + tagName); //Will read current tag and extract the appropriate data from XML according to tag
                         if (inEntry) {                                   //Checks if pull parser is in entry tag, if it is we can test the tag name and assign the variable to the correct field of the current object
                             if ("entry".equalsIgnoreCase(tagName)) {     //String entry cannot be null
                                 applications.add(currentRecord);        //If we reached the tagName, we have reached the end of the data for the current record (end tag for the entry)
@@ -95,10 +93,10 @@ public class ParseApplication {
 
             //Loop through application list once the XMl has been processed and print out values of the fields
 
-            for (FeedEntry app : applications) {
-                Log.d(TAG, "parse: ******");
-                Log.d(TAG, app.toString());
-            }
+//            for (FeedEntry app : applications) {
+//                Log.d(TAG, "parse: ******");
+//                Log.d(TAG, app.toString());
+//            }
 
         } catch (Exception e) {  //Catch all exceptions
             status = false;
