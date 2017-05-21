@@ -52,7 +52,7 @@ public class FeedEntry {
     }
 
     @Override
-    public String toString() {     // Ever Java object has a toString method that is used to provide textual representation of the object instances
+    public String toString() {
         return "name=" + name + '\n' +
                 ", artist=" + artist + '\n' +
                 ", releaseDate=" + releaseDate + '\n' +

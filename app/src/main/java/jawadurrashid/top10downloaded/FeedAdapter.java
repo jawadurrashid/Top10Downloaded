@@ -19,20 +19,20 @@ import java.util.List;
 
 public class FeedAdapter extends ArrayAdapter {
 
-    private static final String TAG = "FeedAdapter";   //Store layout resource that will be given in constructor and list that contains our data
+    private static final String TAG = "FeedAdapter";
     private final int layoutResource;
-    private final LayoutInflater layoutInflater;  //Final field cannot be changed, needs value when declared
+    private final LayoutInflater layoutInflater;
     private List<FeedEntry> applications;
 
     public FeedAdapter(@NonNull Context context, @LayoutRes int resource, List<FeedEntry> applications) {
         super(context, resource);
-        this.layoutResource = resource;  //"this" current instance of class, specifies field opposed to parameter passed into the class
+        this.layoutResource = resource;
         this.layoutInflater = LayoutInflater.from(context); //Context holds state of activity while it is running, contains info that system needs to manage it and allows access to various classes needed as well
         this.applications = applications;
     }
 
     @Override
-    public int getCount() {               //Returning number  of items on our list
+    public int getCount() {
         return applications.size();
     }
 
@@ -54,15 +54,6 @@ public class FeedAdapter extends ArrayAdapter {
             Log.d(TAG, "getView: provided a convertView");
             viewHolder = (ViewHolder) convertView.getTag();
         }
-
-
-        //Commented out, because it is less effecient (more  unecessary Views are created thus allocating more memory)
-
-//        Convert view; listView provides us with a new view to reuse, passes reference to it,untill view is scrolled off screen there is no view to reuse
-//
-//        TextView tvName = (TextView) convertView.findViewById(tvName);     //Finds the three textView widgets; inflating view relates to layout resouce which comes from list_record (constraint layout)
-//        TextView tvArtist = (TextView) convertView.findViewById(R.id.tvArtist); //Find id part of this view and set these fields to the corresponding textViews in the layout
-//        TextView tvSummary = (TextView) convertView.findViewById(R.id.tvSummary);  //Android framework sending back parent to us (list_record)
 
 
         FeedEntry currentApp = applications.get(position);
